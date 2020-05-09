@@ -1,0 +1,4 @@
+name: BotanyGrow
+version: 1.0
+api-version: 1.13
+main: io.github.electroluxv2.BotanyGrow.MainPlugin
