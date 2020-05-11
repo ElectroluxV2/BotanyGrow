@@ -1,10 +1,14 @@
 package io.github.electroluxv2.BotanyGrow.runable;
 
 import io.github.electroluxv2.BotanyGrow.MainPlugin;
+import io.github.electroluxv2.BotanyGrow.settings.Settings;
 import io.github.electroluxv2.BotanyGrow.utils.ChunkInfo;
 import org.bukkit.*;
+import org.bukkit.block.data.Bisected;
 import org.bukkit.scheduler.BukkitRunnable;
+import sun.applet.Main;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 import static io.github.electroluxv2.BotanyGrow.MainPlugin.chunksScanned;
@@ -46,8 +50,14 @@ public class ChunkScanner extends BukkitRunnable {
         }
 
         // Get chunk
-        //MainPlugin.logger.info("X: " + currentChunkInfo.x + " Z: " + currentChunkInfo.z);
-        ChunkSnapshot chunkSnapshot = w.getChunkAt(currentChunkInfo.x, currentChunkInfo.z).getChunkSnapshot();
+        ChunkSnapshot chunkSnapshot;
+        try {
+            chunkSnapshot = w.getChunkAt(currentChunkInfo.x, currentChunkInfo.z).getChunkSnapshot();
+        } catch (Exception e) {
+            // Chunk could be in use
+            return;
+        }
+
         // If chunk is not loaded code at ChunkUnloadEvent should get rid of it
 
 
@@ -67,12 +77,19 @@ public class ChunkScanner extends BukkitRunnable {
                     // Only flora
                     Material m = chunkSnapshot.getBlockType(x, y, z);
 
-                    // TODO settings for materials
-                    if (m.equals(Material.GRASS)) {
+                    ArrayList<Material> toScan = Settings.materialsToScan;
+                    if (toScan.contains(m)) {
+
+                        // Skip top block of multi blocks
+                        if (Settings.multiBlocks.contains(m)) {
+                            Bisected data = (Bisected) chunkSnapshot.getBlockData(x, y, z);
+                            if (data.getHalf().equals(Bisected.Half.TOP)) continue;
+                        }
+
+                        // Do not double if synchronized task is behind async task
+                        if (MainPlugin.blocksToPopulate.contains(l)) continue;
+
                         // Add to synchronized thread
-
-                        if (MainPlugin.blocksToPopulate.contains(l)) continue; // Do not double if synchronized task is behind async task
-
                         MainPlugin.blocksToPopulate.add(l);
                     }
                 }

@@ -1,5 +1,6 @@
 package io.github.electroluxv2.BotanyGrow;
 
+import io.github.electroluxv2.BotanyGrow.commands.ReloadConfigs;
 import io.github.electroluxv2.BotanyGrow.commands.TPS;
 import io.github.electroluxv2.BotanyGrow.events.ChunkLoadE;
 import io.github.electroluxv2.BotanyGrow.events.ChunkUnloadE;
@@ -7,6 +8,7 @@ import io.github.electroluxv2.BotanyGrow.events.PlayerMoveE;
 import io.github.electroluxv2.BotanyGrow.logger.CustomLogger;
 import io.github.electroluxv2.BotanyGrow.runable.ChunkScanner;
 import io.github.electroluxv2.BotanyGrow.runable.FloraPopulate;
+import io.github.electroluxv2.BotanyGrow.settings.FileManager;
 import io.github.electroluxv2.BotanyGrow.settings.Settings;
 import io.github.electroluxv2.BotanyGrow.utils.ChunkInfo;
 import org.bukkit.Bukkit;
@@ -31,9 +33,6 @@ public class MainPlugin extends JavaPlugin {
     // Logger
     public static Logger logger;
 
-    // Settings
-    public static Settings settings;
-
     private BukkitTask chunkScanner;
     private BukkitTask floraPopulate;
 
@@ -43,8 +42,6 @@ public class MainPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
-
-
         // Instance
         instance = this;
 
@@ -52,7 +49,8 @@ public class MainPlugin extends JavaPlugin {
         logger = new CustomLogger(instance);
 
         // Settings
-        settings = new Settings();
+        FileManager.checkFiles();
+        Settings.load();
 
         // Listeners
         Bukkit.getPluginManager().registerEvents(new ChunkLoadE(), instance);
@@ -67,6 +65,7 @@ public class MainPlugin extends JavaPlugin {
             CommandMap commandMap = (CommandMap) bukkitCommandMap.get(Bukkit.getServer());
 
             commandMap.register("TPS", new TPS());
+            commandMap.register("BRL", new ReloadConfigs());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -84,7 +83,6 @@ public class MainPlugin extends JavaPlugin {
                 chunksToScan.add(chunkInfo);
             }
         }
-
 
         this.chunkScanner = new ChunkScanner().runTaskTimerAsynchronously(instance, 0, 1);
         this.floraPopulate = new FloraPopulate().runTaskTimer(instance, 0, 1);

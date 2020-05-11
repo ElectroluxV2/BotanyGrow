@@ -1,0 +1,90 @@
+# Put here every state (tier) of flora that You willing to see in game
+properties:
+  name: 'GRASS_1'
+  material: 'GRASS'
+  spread: true
+requirements:
+  can-grow-on: ['DIRT', 'GRASS_BLOCK']
+  light:
+    min: 10
+    max: 15
+  humidity:
+    min: 0.0
+    max: 4.0
+  biomes:
+    exclusively: []
+    except: []
+  neighborhoods:
+    max: [['TALL_GRASS', 2]]
+    min: []
+  neighborhoods-strict:
+    max: []
+    min: [['AIR', 1]]
+---
+properties:
+  name: 'GRASS_2'
+  material: 'TALL_GRASS'
+  spread: false
+requirements:
+  can-grow-on: ['DIRT', 'GRASS_BLOCK']
+  light:
+    min: 12
+    max: 15
+    light: 12
+  humidity:
+    min: 0.0
+    max: 4.0
+  biomes:
+    exclusively: []
+    except: []
+  neighborhoods:
+    max: [['TALL_GRASS', 2]]
+    min: [['GRASS', 3]]
+  neighborhoods-strict:
+    max: []
+    min: []
+---
+properties:
+  name: 'FERN_1'
+  material: 'FERN'
+  spread: true
+requirements:
+  can-grow-on: ['DIRT', 'GRASS_BLOCK']
+  light:
+    min: 10
+    max: 15
+  humidity:
+    min: 0.0
+    max: 4.0
+  biomes:
+    exclusively: []
+    except: []
+  neighborhoods:
+    max: [['LARGE_FERN', 2]]
+    min: []
+  neighborhoods-strict:
+    max: []
+    min: [['AIR', 1]]
+---
+properties:
+  name: 'FERN_2'
+  material: 'LARGE_FERN'
+  spread: false
+requirements:
+  can-grow-on: ['DIRT', 'GRASS_BLOCK']
+  light:
+    min: 12
+    max: 15
+    light: 12
+  humidity:
+    min: 0.0
+    max: 4.0
+  biomes:
+    exclusively: []
+    except: []
+  neighborhoods:
+    max: [['LARGE_FERN', 2]]
+    min: [['FERN', 3]]
+  neighborhoods-strict:
+    max: []
+    min: []

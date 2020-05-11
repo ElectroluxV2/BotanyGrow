@@ -17,8 +17,9 @@ public class PlayerMoveE implements Listener {
 
     @EventHandler
     public void onPlayerMoveEvent(PlayerMoveEvent e) {
-        Chunk c = e.getFrom().getChunk();
-        ChunkInfo ci = new ChunkInfo(c.getChunkSnapshot());
+        //Chunk c = e.getFrom().getChunk();
+
+        //ChunkInfo ci = new ChunkInfo(c.getX(), c.getZ(), c.getWorld().getName());
 
         //if (MainPlugin.chunksToScan.contains(ci)) return;
         //MainPlugin.chunksToScan.add(ci);

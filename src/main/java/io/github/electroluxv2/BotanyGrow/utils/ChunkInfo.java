@@ -18,6 +18,12 @@ public class ChunkInfo {
         world = chunkSnapshot.getWorldName();
     }
 
+    public ChunkInfo(int x, int z, String world) {
+        this.x = x;
+        this.z = z;
+        this.world = world;
+    }
+
     public Location getWorldLocationFromInChunkLocation(int xInChunk, int y, int zInChunk) {
         Location r = new Location(Bukkit.getWorld(world), x * 16, y, z * 16);
         r.add(xInChunk,0,0);
