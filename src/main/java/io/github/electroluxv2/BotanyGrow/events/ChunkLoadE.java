@@ -2,7 +2,6 @@ package io.github.electroluxv2.BotanyGrow.events;
 
 import io.github.electroluxv2.BotanyGrow.MainPlugin;
 import io.github.electroluxv2.BotanyGrow.utils.ChunkInfo;
-import org.bukkit.Chunk;
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -24,5 +23,7 @@ public class ChunkLoadE implements Listener {
 
         ChunkInfo chunkInfo = new ChunkInfo(e.getChunk().getChunkSnapshot());
         MainPlugin.chunksToScan.add(chunkInfo);
+
+        //MainPlugin.logger.info("New X: " + chunkInfo.x + " Z: " + chunkInfo.z);
     }
 }

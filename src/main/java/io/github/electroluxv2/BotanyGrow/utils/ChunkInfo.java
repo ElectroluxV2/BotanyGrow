@@ -1,6 +1,11 @@
 package io.github.electroluxv2.BotanyGrow.utils;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChunkSnapshot;
+import org.bukkit.Location;
+import org.bukkit.World;
+
+import static java.lang.Math.abs;
 
 public class ChunkInfo {
     public int x;
@@ -11,6 +16,20 @@ public class ChunkInfo {
         x = chunkSnapshot.getX();
         z = chunkSnapshot.getZ();
         world = chunkSnapshot.getWorldName();
+    }
+
+    public Location getWorldLocationFromInChunkLocation(int xInChunk, int y, int zInChunk) {
+        Location r = new Location(Bukkit.getWorld(world), x * 16, y, z * 16);
+        r.add(xInChunk,0,0);
+        r.add(0,0, zInChunk);
+        return r;
+    }
+
+    public Location getInChunkLocationFromWorldLocation(int xWorld, int y, int zWorld) {
+        int xInChunk = abs(xWorld - (x * 16));
+        int zInChunk = abs(zWorld - (z * 16));
+
+        return new Location(Bukkit.getWorld(world), xInChunk, y, zInChunk);
     }
 
     @Override
