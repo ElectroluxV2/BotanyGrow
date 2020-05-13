@@ -8,6 +8,8 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 import java.util.logging.Level;
@@ -19,18 +21,27 @@ public class Settings {
     public static ArrayList<Material> multiBlocks = new ArrayList<>();
 
 
-    public static void load() {
+    public static boolean load() {
         multiBlocks.add(Material.TALL_GRASS);
         multiBlocks.add(Material.TALL_SEAGRASS);
         multiBlocks.add(Material.LARGE_FERN);
+        multiBlocks.add(Material.LILAC);
+        multiBlocks.add(Material.ROSE_BUSH);
+        multiBlocks.add(Material.SUNFLOWER);
+        multiBlocks.add(Material.PEONY);
 
-        YamlConfiguration mainConfig = YamlConfiguration.loadConfiguration(FileManager.config);
-        HashMap<String, BotanyTier> loadedTiers = loadTiers();
-        loadConnections(loadedTiers);
+        try {
+            YamlConfiguration mainConfig = YamlConfiguration.loadConfiguration(FileManager.config);
+            HashMap<String, BotanyTier> loadedTiers = loadTiers();
+            loadConnections(loadedTiers);
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
     }
 
     @SuppressWarnings({"unchecked"})
-    private static HashMap<String, BotanyTier> loadTiers() {
+    private static HashMap<String, BotanyTier> loadTiers() throws IOException {
         // TODO: Error handling
         HashMap<String, BotanyTier> r = new HashMap<>();
         Yaml yaml = new Yaml();
@@ -44,9 +55,9 @@ public class Settings {
                 r.put(e.getKey(), e.getValue());
             }
 
-        } catch (Exception e) {
+        } catch (IOException e) {
             MainPlugin.logger.log(Level.SEVERE, "Can't load tiers.yml");
-            e.printStackTrace();
+            throw e;
         }
 
         return r;

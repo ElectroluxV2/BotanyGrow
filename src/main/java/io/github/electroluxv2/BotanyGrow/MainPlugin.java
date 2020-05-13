@@ -24,13 +24,11 @@ import java.util.ArrayList;
 import java.util.logging.Logger;
 
 import static java.util.logging.Level.INFO;
+import static java.util.logging.Level.SEVERE;
 
 public class MainPlugin extends JavaPlugin {
 
-    // Instance
     private static MainPlugin instance;
-
-    // Logger
     public static Logger logger;
 
     private BukkitTask chunkScanner;
@@ -40,8 +38,10 @@ public class MainPlugin extends JavaPlugin {
     public static ArrayList<ChunkInfo> chunksScanned = new ArrayList<>();
     public static ArrayList<Location> blocksToPopulate = new ArrayList<>();
 
+    private boolean errorOnLoad = false;
+
     @Override
-    public void onEnable() {
+    public void onLoad() {
         // Instance
         instance = this;
 
@@ -50,7 +50,21 @@ public class MainPlugin extends JavaPlugin {
 
         // Settings
         FileManager.checkFiles();
-        Settings.load();
+        if (Settings.load()) {
+            logger.info("Loaded successful");
+        } else {
+            logger.log(SEVERE, "Can't load configs. Disabling");
+            errorOnLoad = true;
+        }
+    }
+
+    @Override
+    public void onEnable() {
+
+        if (errorOnLoad) {
+            Bukkit.getPluginManager().disablePlugin(instance);
+            return;
+        }
 
         // Listeners
         Bukkit.getPluginManager().registerEvents(new ChunkLoadE(), instance);
@@ -86,13 +100,16 @@ public class MainPlugin extends JavaPlugin {
 
         this.chunkScanner = new ChunkScanner().runTaskTimerAsynchronously(instance, 0, 1);
         this.floraPopulate = new FloraPopulate().runTaskTimer(instance, 0, 1);
-        logger.info("Loaded successful");
+        logger.info("Enabled successful");
     }
 
     @Override
     public void onDisable() {
-        if (!this.chunkScanner.isCancelled()) this.chunkScanner.cancel();
-        if (!this.floraPopulate.isCancelled()) this.floraPopulate.cancel();
+        if (!errorOnLoad) {
+            if (!this.chunkScanner.isCancelled()) this.chunkScanner.cancel();
+            if (!this.floraPopulate.isCancelled()) this.floraPopulate.cancel();
+        }
+
         logger.info("Disabled successful");
     }
 
