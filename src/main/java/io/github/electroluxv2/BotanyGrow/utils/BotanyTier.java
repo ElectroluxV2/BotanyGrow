@@ -58,6 +58,12 @@ public class BotanyTier {
             return false;
         }
 
+        // Biome tests
+        if (tier.except.contains(target.getBiome())) return false;
+        if (tier.exclusively.size() > 0) {
+            if (!tier.exclusively.contains(target.getBiome())) return false;
+        }
+
         // Max neighbour
         boolean maxNeighborhoodsTest = true;
         for (Map.Entry<Material, Integer> entry : tier.maxNeighborhoods.entrySet()) {
