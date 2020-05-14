@@ -8,17 +8,9 @@ requirements:
   light:
     min: 10
     max: 15
-  humidity:
-    min: 0.0
-    max: 4.0
-  biomes:
-    exclusively: []
-    except: []
   neighborhoods:
     max: [['TALL_GRASS', 2]]
-    min: []
   neighborhoods-strict:
-    max: []
     min: [['AIR', 1]]
 ---
 properties:
@@ -30,19 +22,9 @@ requirements:
   light:
     min: 12
     max: 15
-    light: 12
-  humidity:
-    min: 0.0
-    max: 4.0
-  biomes:
-    exclusively: []
-    except: []
   neighborhoods:
     max: [['TALL_GRASS', 2]]
     min: [['GRASS', 3]]
-  neighborhoods-strict:
-    max: []
-    min: []
 ---
 properties:
   name: 'FERN_1'
@@ -53,17 +35,9 @@ requirements:
   light:
     min: 10
     max: 15
-  humidity:
-    min: 0.0
-    max: 4.0
-  biomes:
-    exclusively: []
-    except: []
   neighborhoods:
     max: [['LARGE_FERN', 2]]
-    min: []
   neighborhoods-strict:
-    max: []
     min: [['AIR', 1]]
 ---
 properties:
@@ -75,19 +49,9 @@ requirements:
   light:
     min: 12
     max: 15
-    light: 12
-  humidity:
-    min: 0.0
-    max: 4.0
-  biomes:
-    exclusively: []
-    except: []
   neighborhoods:
     max: [['LARGE_FERN', 2]]
     min: [['FERN', 3]]
-  neighborhoods-strict:
-    max: []
-    min: []
 ---
 properties:
   name: 'WHEAT_1'
@@ -98,16 +62,5 @@ requirements:
   light:
     min: 12
     max: 15
-    light: 12
-  humidity:
-    min: 0.0
-    max: 4.0
-  biomes:
-    exclusively: []
-    except: []
   neighborhoods:
-    max: []
     min: [['WATER', 1]]
-  neighborhoods-strict:
-    max: []
-    min: []
