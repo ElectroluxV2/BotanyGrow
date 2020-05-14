@@ -8,14 +8,13 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 import java.util.logging.Level;
 
 public class Settings {
-    public static HashMap<Material, ArrayList<Material>> placeAbleMaterials = new HashMap<>();
+    public static HashMap<Material, HashMap<Material, Integer>> placeAbleMaterials = new HashMap<>();
     public static ArrayList<Material> materialsToScan = new ArrayList<>();
     public static HashMap<Material, BotanyTier> tiers = new HashMap<>();
     public static ArrayList<Material> multiBlocks = new ArrayList<>();
@@ -82,11 +81,10 @@ public class Settings {
         boolean spread = Boolean.parseBoolean(properties.get("spread").toString());
 
         LinkedHashMap<String, Object> requirements = map.get("requirements");
-        ArrayList<Material> canGrowOn = new ArrayList<>();
-        List<String> tmpListString = (List<String>) requirements.get("can-grow-on");
-        for (String s : tmpListString) {
-            Material m = Material.getMaterial(s);
-            canGrowOn.add(m);
+        HashMap<Material, Integer> canGrowOn = new HashMap<>();
+        for (ArrayList<Object> list : ((List<ArrayList<Object>>) requirements.get("can-grow-on"))) {
+            assert list.size() == 2;
+            canGrowOn.put(Material.getMaterial(list.get(0).toString()), (int) list.get(1));
         }
 
         if (!(requirements.get("light") instanceof LinkedHashMap)) return null;
@@ -99,15 +97,16 @@ public class Settings {
         double minHumidity = humidity.get("min");
         double maxHumidity = humidity.get("max");
 
-        LinkedHashMap<String, List<String>> biomes = (LinkedHashMap<String, List<String>>) requirements.get("biomes");
-        ArrayList<Biome> exclusively = new ArrayList<>();
-        for (String s : biomes.get("exclusively")) {
-            Biome biome = Biome.valueOf(s);
-            exclusively.add(biome);
+        LinkedHashMap<String, Object> biomes = (LinkedHashMap<String, Object>) requirements.get("biomes");
+        HashMap<Biome, Integer> exclusively = new HashMap<>();
+        for (ArrayList<Object> list : ((List<ArrayList<Object>>) biomes.get("exclusively"))) {
+            assert list.size() == 2;
+            Biome biome = Biome.valueOf(list.get(0).toString());
+            exclusively.put(biome, (int) list.get(1));
         }
 
         ArrayList<Biome> except = new ArrayList<>();
-        for (String s : biomes.get("except")) {
+        for (String s : ((List<String>)biomes.get("except"))) {
             Biome biome = Biome.valueOf(s);
             except.add(biome);
         }
@@ -176,7 +175,7 @@ public class Settings {
     @SuppressWarnings({"unchecked"})
     private static void parseConnectionYAML(LinkedHashMap<String, Object> map, HashMap<String, BotanyTier> loadedTiers) {
         String tierName = (String) map.get("tier");
-        ArrayList<String> nextNames = (ArrayList<String>) map.getOrDefault("next", new ArrayList<>());
+        List<ArrayList<Object>> nextTiers = (List<ArrayList<Object>>) map.getOrDefault("next", new ArrayList<>());
         String previous = (String) map.getOrDefault("previous", "");
 
         // Find source
@@ -197,24 +196,27 @@ public class Settings {
         }
 
         // Add next
-        for (String nextName : nextNames) {
-            BotanyTier next = loadedTiers.get(nextName);
+        for (ArrayList<Object> list : nextTiers) {
+            assert list.size() == 2;
+            BotanyTier next = loadedTiers.get(list.get(0).toString());
 
             if (next == null) {
                 MainPlugin.logger.warning("Unknown tier: + " + tierName);
                 continue;
             }
 
-            source.next.add(next);
+            source.next.put(next, (int) list.get(1));
         }
 
         materialsToScan.add(source.material);
         tiers.put(source.material, source);
 
         StringBuilder sb = new StringBuilder();
-        for (BotanyTier next : source.next) {
-            sb.append(next.material.name());
-            sb.append(" | ");
+        for (Map.Entry<BotanyTier, Integer> entry : source.next.entrySet()) {
+            sb.append(entry.getKey().material.name());
+            sb.append(" ( ");
+            sb.append(entry.getValue());
+            sb.append("% ) | ");
         }
 
         String msg = source.material.name();

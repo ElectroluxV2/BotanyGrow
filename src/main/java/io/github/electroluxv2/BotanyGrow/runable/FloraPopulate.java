@@ -14,18 +14,20 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 public class FloraPopulate extends BukkitRunnable {
 
-    private static int random(int min, int max) {
+    private static int randomIndex(int size) {
         Random r = new Random();
-        return r.nextInt((max - min) + 1) + min;
+        return r.nextInt(size);
     }
 
     public void run() {
         if (MainPlugin.blocksToPopulate.size() == 0) return;
-        int randomIndex = random(0, MainPlugin.blocksToPopulate.size() - 1);
+        int randomIndex = randomIndex(MainPlugin.blocksToPopulate.size());
         Location l = MainPlugin.blocksToPopulate.get(randomIndex);
         MainPlugin.blocksToPopulate.remove(randomIndex);
 
@@ -60,8 +62,20 @@ public class FloraPopulate extends BukkitRunnable {
                     Block blockUnder = possibleSpot.getRelative(0, -1, 0);
 
                     // Has to be place able
-                    if (Settings.placeAbleMaterials.get(o.getType()) == null) continue;
-                    if (!Settings.placeAbleMaterials.get(o.getType()).contains(blockUnder.getType())) continue;
+                    HashMap<Material, Integer> placeAble = Settings.placeAbleMaterials.get(o.getType());
+                    if (placeAble == null) continue;
+
+                    ArrayList<Material> afterChance = new ArrayList<>();
+                    for (Map.Entry<Material, Integer> entry : placeAble.entrySet()) {
+                        // Chance
+                        if (Math.round(Math.random()*100) <= entry.getValue()) {
+                            continue;
+                        }
+
+                        afterChance.add(entry.getKey());
+                    }
+
+                    if (!afterChance.contains(blockUnder.getType())) continue;
 
                     acceptableSpots.add(possibleSpot);
                 }
@@ -105,9 +119,7 @@ public class FloraPopulate extends BukkitRunnable {
             return;
         }
 
-        // TODO: Shuffle array
         ArrayList<BotanyTier> nextTiers = currentTier.matchNext(o, neighbourInfo);
-
         // Spots to spread exists
         if (acceptableSpots != null) {
 
@@ -175,7 +187,7 @@ public class FloraPopulate extends BukkitRunnable {
         }
 
         // Rand new spot
-        int indexForNewSpot = random(0, acceptableSpots.size() - 1);
+        int indexForNewSpot = randomIndex(acceptableSpots.size());
         Block target = acceptableSpots.get(indexForNewSpot);
 
         target.setType(o.getType());

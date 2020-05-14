@@ -1,12 +1,12 @@
 # Connect every tier in ascending order
 tier: "GRASS_1"
-next: ["GRASS_2"]
+next: [["GRASS_2", 25], ["WHEAT_1", 2]]
 ---
 tier: "GRASS_2"
 previous: "GRASS_1"
 ---
 tier: "FERN_1"
-next: ["FERN_2"]
+next: [["FERN_2", 25]]
 ---
 tier: "FERN_2"
 previous: "FERN_1"

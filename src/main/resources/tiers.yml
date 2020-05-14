@@ -4,7 +4,7 @@ properties:
   material: 'GRASS'
   spread: true
 requirements:
-  can-grow-on: ['DIRT', 'GRASS_BLOCK']
+  can-grow-on: [['DIRT', 50], ['GRASS_BLOCK', 75]]
   light:
     min: 10
     max: 15
@@ -26,7 +26,7 @@ properties:
   material: 'TALL_GRASS'
   spread: false
 requirements:
-  can-grow-on: ['DIRT', 'GRASS_BLOCK']
+  can-grow-on: [['DIRT', 50], ['GRASS_BLOCK', 75]]
   light:
     min: 12
     max: 15
@@ -49,7 +49,7 @@ properties:
   material: 'FERN'
   spread: true
 requirements:
-  can-grow-on: ['DIRT', 'GRASS_BLOCK']
+  can-grow-on: [['DIRT', 50], ['GRASS_BLOCK', 75]]
   light:
     min: 10
     max: 15
@@ -71,7 +71,7 @@ properties:
   material: 'LARGE_FERN'
   spread: false
 requirements:
-  can-grow-on: ['DIRT', 'GRASS_BLOCK']
+  can-grow-on: [['DIRT', 50], ['GRASS_BLOCK', 75]]
   light:
     min: 12
     max: 15
@@ -85,6 +85,29 @@ requirements:
   neighborhoods:
     max: [['LARGE_FERN', 2]]
     min: [['FERN', 3]]
+  neighborhoods-strict:
+    max: []
+    min: []
+---
+properties:
+  name: 'WHEAT_1'
+  material: 'WHEAT'
+  spread: false
+requirements:
+  can-grow-on: [['DIRT', 50], ['GRASS_BLOCK', 75]]
+  light:
+    min: 12
+    max: 15
+    light: 12
+  humidity:
+    min: 0.0
+    max: 4.0
+  biomes:
+    exclusively: []
+    except: []
+  neighborhoods:
+    max: []
+    min: [['WATER', 1]]
   neighborhoods-strict:
     max: []
     min: []

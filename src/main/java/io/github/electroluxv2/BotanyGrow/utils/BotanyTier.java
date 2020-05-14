@@ -20,27 +20,32 @@ public class BotanyTier {
     public HashMap<Material, Integer> minStrictNeighborhoods = new HashMap<>();
     public HashMap<Material, Integer> maxStrictNeighborhoods = new HashMap<>();
     public ArrayList<Biome> except = new ArrayList<>();
-    public ArrayList<Biome> exclusively = new ArrayList<>();
+    public HashMap<Biome, Integer> exclusively = new HashMap<>();
     public Material material;
     public @Nullable BotanyTier previous = null;
-    public ArrayList<BotanyTier> next = new ArrayList<>();
-
-    public BotanyTier(Material m, int l) {
-        this.material = m;
-        this.minLightLvl = l;
-    }
+    public HashMap<BotanyTier, Integer> next = new HashMap<>();
 
     public BotanyTier(Material m) {
         this.material = m;
     }
 
     public ArrayList<BotanyTier> matchNext(Block target, NeighbourInfo neighbourInfo) {
-        ArrayList<BotanyTier> optionsLeft = new ArrayList<>(next);
+        HashMap<BotanyTier, Integer> optionsLeft = new HashMap<>(next);
 
-        // Every option has to pass tests
-        optionsLeft.removeIf(option -> !this.runTestOnBlock(target, option, neighbourInfo));
+        ArrayList<BotanyTier> r = new ArrayList<>();
+        for (Map.Entry<BotanyTier, Integer> entry : optionsLeft.entrySet()) {
 
-        return optionsLeft;
+            // Chance
+            if (Math.round(Math.random()*100) <= entry.getValue()) {
+                continue;
+            }
+
+            // Every option has to pass tests
+            if (this.runTestOnBlock(target, entry.getKey(), neighbourInfo)) {
+                r.add(entry.getKey());
+            }
+        }
+        return r;
     }
 
     public boolean canSpreadOn(Block target, NeighbourInfo neighbourInfo) {
@@ -61,7 +66,10 @@ public class BotanyTier {
         // Biome tests
         if (tier.except.contains(target.getBiome())) return false;
         if (tier.exclusively.size() > 0) {
-            if (!tier.exclusively.contains(target.getBiome())) return false;
+            if (tier.exclusively.get(target.getBiome()) == null) return false;
+
+            // Chance
+            if (Math.round(Math.random()*100) <= tier.exclusively.get(target.getBiome())) return false;
         }
 
         // Max neighbour

@@ -20,9 +20,9 @@ public class ChunkScanner extends BukkitRunnable {
     private int heightIndex = 0;
     public int splitParts = 1;
 
-    private static int random(int min, int max) {
+    private static int randomIndex(int size) {
         Random r = new Random();
-        return r.nextInt((max - min) + 1) + min;
+        return r.nextInt(size);
     }
 
     public void run() {
@@ -34,7 +34,7 @@ public class ChunkScanner extends BukkitRunnable {
                 chunksToScan.addAll(chunksScanned);
                 chunksScanned.clear();
             }
-            int randomIndex = random(0, chunksToScan.size() - 1);
+            int randomIndex = randomIndex(chunksToScan.size());
             currentChunkInfo = chunksToScan.get(randomIndex);
             if (currentChunkInfo == null) {
                 chunksToScan.remove(randomIndex);
