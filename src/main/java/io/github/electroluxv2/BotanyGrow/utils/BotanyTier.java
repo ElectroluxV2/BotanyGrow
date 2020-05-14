@@ -12,8 +12,8 @@ import java.util.Map;
 public class BotanyTier {
     public int minLightLvl = 0;
     public int maxLightLvl = 15;
-    public double minHumidityLvl = 0;
-    public double maxHumidityLvl = 100;
+    public double minHumidityLvl = 0.0;
+    public double maxHumidityLvl = 4.0;
     public boolean spread = false;
     public HashMap<Material, Integer> minNeighborhoods = new HashMap<>();
     public HashMap<Material, Integer> maxNeighborhoods = new HashMap<>();
@@ -25,9 +25,7 @@ public class BotanyTier {
     public @Nullable BotanyTier previous = null;
     public HashMap<BotanyTier, Integer> next = new HashMap<>();
 
-    public BotanyTier(Material m) {
-        this.material = m;
-    }
+    public BotanyTier() {  }
 
     public ArrayList<BotanyTier> matchNext(Block target, NeighbourInfo neighbourInfo) {
         HashMap<BotanyTier, Integer> optionsLeft = new HashMap<>(next);
@@ -141,11 +139,41 @@ public class BotanyTier {
         if (!(obj instanceof BotanyTier))
             return false;
         BotanyTier other = (BotanyTier) obj;
-        return minNeighborhoods.equals(other.minNeighborhoods) && maxNeighborhoods.equals(other.maxNeighborhoods) && minHumidityLvl == other.minHumidityLvl && minLightLvl == other.minLightLvl;
+        return
+        other.maxStrictNeighborhoods.equals(this.maxStrictNeighborhoods) &&
+        other.minStrictNeighborhoods.equals(this.minStrictNeighborhoods) &&
+        other.maxNeighborhoods.equals(this.maxNeighborhoods) &&
+        other.minNeighborhoods.equals(this.minNeighborhoods) &&
+        other.exclusively.equals(this.exclusively) &&
+        other.except.equals(this.except) &&
+        other.maxHumidityLvl == this.maxHumidityLvl &&
+        other.minHumidityLvl == this.minHumidityLvl &&
+        other.maxLightLvl == this.maxLightLvl &&
+        other.minLightLvl == this.minLightLvl &&
+        other.spread == this.spread &&
+        other.material.equals(this.material);
     }
 
     @Override
     public int hashCode() {
         return minNeighborhoods == null ? 0 : minNeighborhoods.hashCode();
+    }
+
+    public BotanyTier deepCopy() {
+        BotanyTier r = new BotanyTier();
+        r.maxStrictNeighborhoods = this.maxStrictNeighborhoods;
+        r.minStrictNeighborhoods = this.minStrictNeighborhoods;
+        r.maxNeighborhoods = this.maxNeighborhoods;
+        r.minNeighborhoods = this.minNeighborhoods;
+        r.exclusively = this.exclusively;
+        r.except = this.except;
+        r.maxHumidityLvl = this.maxHumidityLvl;
+        r.minHumidityLvl = this.minHumidityLvl;
+        r.maxLightLvl = this.maxLightLvl;
+        r.minLightLvl = this.minLightLvl;
+        r.spread = this.spread;
+        r.material = this.material;
+
+        return r;
     }
 }

@@ -6,10 +6,9 @@ import org.bukkit.Material;
 import org.bukkit.block.Biome;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.yaml.snakeyaml.Yaml;
+import sun.applet.Main;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
 
@@ -30,17 +29,18 @@ public class Settings {
         multiBlocks.add(Material.PEONY);
 
         crops.add(Material.WHEAT);
-        crops.add(Material.BEETROOT);
-        crops.add(Material.POTATO);
+        crops.add(Material.BEETROOTS);
+        crops.add(Material.POTATOES);
         crops.add(Material.PUMPKIN_STEM);
         crops.add(Material.MELON_STEM);
-        crops.add(Material.CARROT);
+        crops.add(Material.CARROTS);
 
         try {
             YamlConfiguration mainConfig = YamlConfiguration.loadConfiguration(FileManager.config);
             HashMap<String, BotanyTier> loadedTiers = loadTiers();
             loadConnections(loadedTiers);
         } catch (Exception e) {
+            e.printStackTrace();
             return false;
         }
         return true;
@@ -56,7 +56,8 @@ public class Settings {
 
             for (Object o : itr) {
                 LinkedHashMap<String, LinkedHashMap<String, Object>> map = (LinkedHashMap<String, LinkedHashMap<String, Object>>) o;
-                Map.Entry<String, BotanyTier> e = parseTierYAML(map);
+                Map.Entry<String, BotanyTier> e = parseTierYAML(map, r);
+                if (e == null) continue;
                 r.put(e.getKey(), e.getValue());
             }
 
@@ -69,112 +70,149 @@ public class Settings {
     }
 
     @SuppressWarnings({"unchecked"})
-    private static Map.Entry<String, BotanyTier> parseTierYAML(LinkedHashMap<String, LinkedHashMap<String, Object>> map) {
+    private static Map.Entry<String, BotanyTier> parseTierYAML(LinkedHashMap<String, LinkedHashMap<String, Object>> map, HashMap<String, BotanyTier> alreadyLoaded) {
         // TODO: Error handling
-        // TODO: Not obligatory options
-        // TODO: Inheritance
         LinkedHashMap<String, Object> properties = map.get("properties");
         String name = properties.get("name").toString();
-        Material material = Material.getMaterial(properties.get("material").toString());
-        assert material != null;
-        boolean spread = Boolean.parseBoolean(properties.get("spread").toString());
 
-        LinkedHashMap<String, Object> requirements = map.get("requirements");
-        HashMap<Material, Integer> canGrowOn = new HashMap<>();
-        for (ArrayList<Object> list : ((List<ArrayList<Object>>) requirements.get("can-grow-on"))) {
-            assert list.size() == 2;
-            canGrowOn.put(Material.getMaterial(list.get(0).toString()), (int) list.get(1));
+        BotanyTier tier;
+        if (properties.get("inherits") != null) {
+            if (alreadyLoaded.get(properties.get("inherits").toString()) == null) {
+                MainPlugin.logger.warning("Unknown tier: + " + properties.get("inherits").toString());
+                return null;
+            }
+            tier = alreadyLoaded.get(properties.get("inherits").toString()).deepCopy();
+        } else {
+            tier = new BotanyTier();
         }
 
-        int minLight = 0, maxLight = 15;
-        if (requirements.get("light") != null) {
-            LinkedHashMap<String, Integer> light = (LinkedHashMap<String, Integer>) requirements.get("light");
-            minLight = light.get("min");
-            maxLight = light.get("max");
+        if  (properties.get("material") != null) {
+            tier.material = Material.getMaterial(properties.get("material").toString());
         }
 
-        double minHumidity = 0.0, maxHumidity = 4.0;
-        if (requirements.get("humidity") != null) {
-            LinkedHashMap<String, Double> humidity = (LinkedHashMap<String, Double>) requirements.get("humidity");
-            minHumidity = humidity.get("min");
-            maxHumidity = humidity.get("max");
+        if (properties.get("spread") != null) {
+            tier.spread = Boolean.parseBoolean(properties.get("spread").toString());
         }
 
-        HashMap<Biome, Integer> exclusively = new HashMap<>();
-        ArrayList<Biome> except = new ArrayList<>();
-        if (requirements.get("biomes") != null) {
-            LinkedHashMap<String, Object> biomes = (LinkedHashMap<String, Object>) requirements.get("biomes");
+        if (map.get("requirements") != null) {
+            LinkedHashMap<String, Object> requirements = map.get("requirements");
 
-            if (biomes.get("exclusively") != null) {
-                for (ArrayList<Object> list : ((List<ArrayList<Object>>) biomes.get("exclusively"))) {
+            if (requirements.get("can-grow-on") != null) {
+                HashMap<Material, Integer> canGrowOn = new HashMap<>();
+                for (ArrayList<Object> list : ((List<ArrayList<Object>>) requirements.get("can-grow-on"))) {
                     assert list.size() == 2;
-                    Biome biome = Biome.valueOf(list.get(0).toString());
-                    exclusively.put(biome, (int) list.get(1));
+                    canGrowOn.put(Material.getMaterial(list.get(0).toString()), (int) list.get(1));
+                }
+                placeAbleMaterials.put(tier.material, canGrowOn);
+            } else if (properties.get("inherits") != null) {
+                placeAbleMaterials.put(tier.material, placeAbleMaterials.get(tier.material));
+            } else {
+                MainPlugin.logger.warning("Missing 'can-grow-on' for: " + name);
+            }
+
+            if (requirements.get("light") != null) {
+                LinkedHashMap<String, Integer> light = (LinkedHashMap<String, Integer>) requirements.get("light");
+                if (light.get("min") != null)
+                    tier.minLightLvl = light.get("min");
+                if (light.get("max") != null)
+                    tier.maxLightLvl = light.get("max");
+            }
+
+            if (requirements.get("humidity") != null) {
+                LinkedHashMap<String, Double> humidity = (LinkedHashMap<String, Double>) requirements.get("humidity");
+                if (humidity.get("min") != null)
+                    tier.minHumidityLvl = humidity.get("min");
+                if (humidity.get("max") != null)
+                    tier.maxHumidityLvl = humidity.get("max");
+            }
+
+            HashMap<Biome, Integer> exclusively = new HashMap<>();
+            ArrayList<Biome> except = new ArrayList<>();
+            if (requirements.get("biomes") != null) {
+                LinkedHashMap<String, Object> biomes = (LinkedHashMap<String, Object>) requirements.get("biomes");
+
+                if (biomes.get("exclusively") != null) {
+                    for (ArrayList<Object> list : ((List<ArrayList<Object>>) biomes.get("exclusively"))) {
+                        assert list.size() == 2;
+                        Biome biome = Biome.valueOf(list.get(0).toString());
+                        exclusively.put(biome, (int) list.get(1));
+                    }
+                }
+
+                if (biomes.get("except") != null) {
+                    for (String s : ((List<String>) biomes.get("except"))) {
+                        Biome biome = Biome.valueOf(s);
+                        except.add(biome);
+                    }
                 }
             }
 
-            if (biomes.get("except") != null) {
-                for (String s : ((List<String>)biomes.get("except"))) {
-                    Biome biome = Biome.valueOf(s);
-                    except.add(biome);
+            if (except.size() > 0) {
+                tier.except = except;
+            }
+
+            if (exclusively.size() > 0) {
+                tier.exclusively = exclusively;
+            }
+
+            HashMap<Material, Integer> maxNeighborhoods = new HashMap<>();
+            HashMap<Material, Integer> minNeighborhoods = new HashMap<>();
+            if (requirements.get("neighborhoods") != null) {
+                LinkedHashMap<String, List<ArrayList<Object>>> neighborhoods = (LinkedHashMap<String, List<ArrayList<Object>>>) requirements.get("neighborhoods");
+
+                if (neighborhoods.get("max") != null) {
+                    for (ArrayList<Object> list : neighborhoods.get("max")) {
+                        assert list.size() == 2;
+                        maxNeighborhoods.put(Material.getMaterial(list.get(0).toString()), (int) list.get(1));
+                    }
+                }
+
+                if (neighborhoods.get("min") != null) {
+                    for (ArrayList<Object> list : neighborhoods.get("min")) {
+                        assert list.size() == 2;
+                        minNeighborhoods.put(Material.getMaterial(list.get(0).toString()), (int) list.get(1));
+                    }
                 }
             }
+
+            if (maxNeighborhoods.size() > 0) {
+                tier.maxNeighborhoods = maxNeighborhoods;
+            }
+
+            if (minNeighborhoods.size() > 0) {
+                tier.minNeighborhoods = minNeighborhoods;
+            }
+
+            HashMap<Material, Integer> maxNeighborhoodsStrict = new HashMap<>();
+            HashMap<Material, Integer> minNeighborhoodsStrict = new HashMap<>();
+            if (requirements.get("neighborhoods-strict") != null) {
+                LinkedHashMap<String, List<ArrayList<Object>>> neighborhoodsStrict = (LinkedHashMap<String, List<ArrayList<Object>>>) requirements.get("neighborhoods-strict");
+
+                if (neighborhoodsStrict.get("max") != null) {
+                    for (ArrayList<Object> list : neighborhoodsStrict.get("max")) {
+                        assert list.size() == 2;
+                        maxNeighborhoodsStrict.put(Material.getMaterial(list.get(0).toString()), (int) list.get(1));
+                    }
+                }
+
+                if (neighborhoodsStrict.get("max") != null) {
+                    for (ArrayList<Object> list : neighborhoodsStrict.get("max")) {
+                        assert list.size() == 2;
+                        minNeighborhoodsStrict.put(Material.getMaterial(list.get(0).toString()), (int) list.get(1));
+                    }
+                }
+            }
+
+            if (maxNeighborhoodsStrict.size() > 0) {
+                tier.maxStrictNeighborhoods = maxNeighborhoodsStrict;
+            }
+
+            if (minNeighborhoodsStrict.size() > 0) {
+                tier.minStrictNeighborhoods = minNeighborhoodsStrict;
+            }
+
         }
 
-        HashMap<Material, Integer> maxNeighborhoods = new HashMap<>();
-        HashMap<Material, Integer> minNeighborhoods = new HashMap<>();
-        if (requirements.get("neighborhoods") != null) {
-            LinkedHashMap<String, List<ArrayList<Object>>> neighborhoods = (LinkedHashMap<String, List<ArrayList<Object>>>) requirements.get("neighborhoods");
-
-            if (neighborhoods.get("max") != null) {
-                for (ArrayList<Object> list : neighborhoods.get("max")) {
-                    assert list.size() == 2;
-                    maxNeighborhoods.put(Material.getMaterial(list.get(0).toString()), (int) list.get(1));
-                }
-            }
-
-            if (neighborhoods.get("min") != null) {
-                for (ArrayList<Object> list : neighborhoods.get("min")) {
-                    assert list.size() == 2;
-                    minNeighborhoods.put(Material.getMaterial(list.get(0).toString()), (int) list.get(1));
-                }
-            }
-        }
-
-        HashMap<Material, Integer> maxNeighborhoodsStrict = new HashMap<>();
-        HashMap<Material, Integer> minNeighborhoodsStrict = new HashMap<>();
-        if (requirements.get("neighborhoods-strict") != null) {
-            LinkedHashMap<String, List<ArrayList<Object>>> neighborhoodsStrict = (LinkedHashMap<String, List<ArrayList<Object>>>) requirements.get("neighborhoods-strict");
-
-            if (neighborhoodsStrict.get("max") != null) {
-                for (ArrayList<Object> list : neighborhoodsStrict.get("max")) {
-                    assert list.size() == 2;
-                    maxNeighborhoodsStrict.put(Material.getMaterial(list.get(0).toString()), (int) list.get(1));
-                }
-            }
-
-            if (neighborhoodsStrict.get("max") != null) {
-                for (ArrayList<Object> list : neighborhoodsStrict.get("max")) {
-                    assert list.size() == 2;
-                    minNeighborhoodsStrict.put(Material.getMaterial(list.get(0).toString()), (int) list.get(1));
-                }
-            }
-        }
-
-        BotanyTier tier = new BotanyTier(material);
-        tier.maxStrictNeighborhoods = maxNeighborhoodsStrict;
-        tier.minStrictNeighborhoods = minNeighborhoodsStrict;
-        tier.maxNeighborhoods = maxNeighborhoods;
-        tier.minNeighborhoods = minNeighborhoods;
-        tier.spread = spread;
-        tier.maxLightLvl = maxLight;
-        tier.minLightLvl = minLight;
-        tier.maxHumidityLvl = maxHumidity;
-        tier.minHumidityLvl = minHumidity;
-        tier.except = except;
-        tier.exclusively = exclusively;
-
-        placeAbleMaterials.put(tier.material, canGrowOn);
         return new AbstractMap.SimpleEntry<>(name, tier);
     }
 

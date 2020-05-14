@@ -7,7 +7,6 @@ requirements:
   can-grow-on: [['DIRT', 50], ['GRASS_BLOCK', 75]]
   light:
     min: 10
-    max: 15
   neighborhoods:
     max: [['TALL_GRASS', 2]]
   neighborhoods-strict:
@@ -21,7 +20,6 @@ requirements:
   can-grow-on: [['DIRT', 50], ['GRASS_BLOCK', 75]]
   light:
     min: 12
-    max: 15
   neighborhoods:
     max: [['TALL_GRASS', 2]]
     min: [['GRASS', 3]]
@@ -29,26 +27,16 @@ requirements:
 properties:
   name: 'FERN_1'
   material: 'FERN'
-  spread: true
+  inherits: 'GRASS_1'
 requirements:
-  can-grow-on: [['DIRT', 50], ['GRASS_BLOCK', 75]]
-  light:
-    min: 10
-    max: 15
   neighborhoods:
     max: [['LARGE_FERN', 2]]
-  neighborhoods-strict:
-    min: [['AIR', 1]]
 ---
 properties:
   name: 'FERN_2'
   material: 'LARGE_FERN'
-  spread: false
+  inherits: 'GRASS_2'
 requirements:
-  can-grow-on: [['DIRT', 50], ['GRASS_BLOCK', 75]]
-  light:
-    min: 12
-    max: 15
   neighborhoods:
     max: [['LARGE_FERN', 2]]
     min: [['FERN', 3]]
@@ -61,6 +49,30 @@ requirements:
   can-grow-on: [['DIRT', 50], ['GRASS_BLOCK', 75]]
   light:
     min: 12
-    max: 15
   neighborhoods:
     min: [['WATER', 1]]
+---
+properties:
+  name: 'POTATOES_1'
+  material: 'POTATOES'
+  inherits: 'WHEAT_1'
+---
+properties:
+  name: 'BEETROOTS_1'
+  material: 'BEETROOTS'
+  inherits: 'WHEAT_1'
+---
+properties:
+  name: 'PUMPKIN_STEM_1'
+  material: 'PUMPKIN_STEM'
+  inherits: 'WHEAT_1'
+---
+properties:
+  name: 'CARROTS_1'
+  material: 'CARROTS'
+  inherits: 'WHEAT_1'
+---
+properties:
+  name: 'MELON_STEM_1'
+  material: 'MELON_STEM'
+  inherits: 'WHEAT_1'
