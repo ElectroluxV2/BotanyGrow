@@ -13,10 +13,7 @@ import org.bukkit.block.data.Bisected;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public class FloraPopulate extends BukkitRunnable {
 
@@ -120,6 +117,9 @@ public class FloraPopulate extends BukkitRunnable {
         }
 
         ArrayList<BotanyTier> nextTiers = currentTier.matchNext(o, neighbourInfo);
+
+        Collections.shuffle(nextTiers);
+
         // Spots to spread exists
         if (acceptableSpots != null) {
 
