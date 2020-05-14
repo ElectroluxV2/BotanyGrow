@@ -2,9 +2,7 @@ package io.github.electroluxv2.BotanyGrow;
 
 import io.github.electroluxv2.BotanyGrow.commands.ReloadConfigs;
 import io.github.electroluxv2.BotanyGrow.commands.TPS;
-import io.github.electroluxv2.BotanyGrow.events.ChunkLoadE;
-import io.github.electroluxv2.BotanyGrow.events.ChunkUnloadE;
-import io.github.electroluxv2.BotanyGrow.events.PlayerMoveE;
+import io.github.electroluxv2.BotanyGrow.events.*;
 import io.github.electroluxv2.BotanyGrow.logger.CustomLogger;
 import io.github.electroluxv2.BotanyGrow.runable.ChunkScanner;
 import io.github.electroluxv2.BotanyGrow.runable.FloraPopulate;
@@ -23,7 +21,6 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
-import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.SEVERE;
 
 public class MainPlugin extends JavaPlugin {
@@ -70,6 +67,9 @@ public class MainPlugin extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new ChunkLoadE(), instance);
         Bukkit.getPluginManager().registerEvents(new ChunkUnloadE(), instance);
         Bukkit.getPluginManager().registerEvents(new PlayerMoveE(), instance);
+        Bukkit.getPluginManager().registerEvents(new BlockPhysicsE(), instance);
+        Bukkit.getPluginManager().registerEvents(new BlockFadeE(), instance);
+
 
         // Commands
         try {

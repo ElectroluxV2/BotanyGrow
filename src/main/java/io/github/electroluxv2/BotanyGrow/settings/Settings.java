@@ -19,7 +19,7 @@ public class Settings {
     public static ArrayList<Material> materialsToScan = new ArrayList<>();
     public static HashMap<Material, BotanyTier> tiers = new HashMap<>();
     public static ArrayList<Material> multiBlocks = new ArrayList<>();
-
+    public static ArrayList<Material> crops = new ArrayList<>();
 
     public static boolean load() {
         multiBlocks.add(Material.TALL_GRASS);
@@ -29,6 +29,13 @@ public class Settings {
         multiBlocks.add(Material.ROSE_BUSH);
         multiBlocks.add(Material.SUNFLOWER);
         multiBlocks.add(Material.PEONY);
+
+        crops.add(Material.WHEAT);
+        crops.add(Material.BEETROOT);
+        crops.add(Material.POTATO);
+        crops.add(Material.PUMPKIN_STEM);
+        crops.add(Material.MELON_STEM);
+        crops.add(Material.CARROT);
 
         try {
             YamlConfiguration mainConfig = YamlConfiguration.loadConfiguration(FileManager.config);
