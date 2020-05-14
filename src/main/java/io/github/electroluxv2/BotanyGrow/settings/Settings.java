@@ -6,7 +6,6 @@ import org.bukkit.Material;
 import org.bukkit.block.Biome;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.yaml.snakeyaml.Yaml;
-import sun.applet.Main;
 
 import java.io.*;
 import java.util.*;
@@ -18,6 +17,8 @@ public class Settings {
     public static HashMap<Material, BotanyTier> tiers = new HashMap<>();
     public static ArrayList<Material> multiBlocks = new ArrayList<>();
     public static ArrayList<Material> crops = new ArrayList<>();
+    public static int scannersCount = 2;
+    public static int chunkParts = 1;
 
     public static boolean load() {
         multiBlocks.add(Material.TALL_GRASS);
@@ -37,6 +38,8 @@ public class Settings {
 
         try {
             YamlConfiguration mainConfig = YamlConfiguration.loadConfiguration(FileManager.config);
+            scannersCount = mainConfig.getInt("chunk-scanners");
+            chunkParts = mainConfig.getInt("chunk-parts");
             HashMap<String, BotanyTier> loadedTiers = loadTiers();
             loadConnections(loadedTiers);
         } catch (Exception e) {

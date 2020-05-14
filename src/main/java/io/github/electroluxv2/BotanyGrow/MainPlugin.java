@@ -4,6 +4,7 @@ import io.github.electroluxv2.BotanyGrow.commands.ReloadConfigs;
 import io.github.electroluxv2.BotanyGrow.commands.TPS;
 import io.github.electroluxv2.BotanyGrow.events.*;
 import io.github.electroluxv2.BotanyGrow.logger.CustomLogger;
+import io.github.electroluxv2.BotanyGrow.runable.Broadcast;
 import io.github.electroluxv2.BotanyGrow.runable.ChunkScanner;
 import io.github.electroluxv2.BotanyGrow.runable.FloraPopulate;
 import io.github.electroluxv2.BotanyGrow.settings.FileManager;
@@ -18,7 +19,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.logging.Logger;
 
 import static java.util.logging.Level.SEVERE;
@@ -28,12 +29,16 @@ public class MainPlugin extends JavaPlugin {
     private static MainPlugin instance;
     public static Logger logger;
 
-    private BukkitTask chunkScanner;
+    public final static HashMap<Integer, Integer> asyncMetrics = new HashMap<>();
+    public final static ArrayList<BukkitTask> chunkScanners = new ArrayList<>();
+    private final static ArrayList<Integer> scannersUsed = new ArrayList<>();
+    private final static Queue<Integer> scannersUnused = new LinkedList<>();
     private BukkitTask floraPopulate;
+    private BukkitTask broadcast;
 
-    public static ArrayList<ChunkInfo> chunksToScan = new ArrayList<>();
-    public static ArrayList<ChunkInfo> chunksScanned = new ArrayList<>();
-    public static ArrayList<Location> blocksToPopulate = new ArrayList<>();
+    public final static HashMap<Integer, ArrayList<ChunkInfo>> chunksToScan = new HashMap<>();
+    public final static HashMap<Integer, ArrayList<ChunkInfo>> chunksScanned = new HashMap<>();
+    public final static ArrayList<Location> blocksToPopulate = new ArrayList<>();
 
     private boolean errorOnLoad = false;
 
@@ -84,6 +89,17 @@ public class MainPlugin extends JavaPlugin {
             e.printStackTrace();
         }
 
+        // Init multithreading
+        for (int i = 0; i < Settings.scannersCount; i++) {
+            MainPlugin.logger.info(i + "c");
+            BukkitTask scanner = new ChunkScanner().runTaskTimerAsynchronously(instance, 10, 1);
+            chunkScanners.add(scanner);
+            asyncMetrics.put(scanner.getTaskId(), 0);
+            chunksToScan.put(scanner.getTaskId(), new ArrayList<>());
+            chunksScanned.put(scanner.getTaskId(), new ArrayList<>());
+            scannersUnused.add(scanner.getTaskId());
+        }
+
         // Add loaded chunks
         for (World w : Bukkit.getWorlds()) {
 
@@ -94,19 +110,34 @@ public class MainPlugin extends JavaPlugin {
             for (Chunk c : w.getLoadedChunks()) {
 
                 ChunkInfo chunkInfo = new ChunkInfo(c.getChunkSnapshot());
-                chunksToScan.add(chunkInfo);
+                chunksToScan.computeIfAbsent(getScannerId(), id -> new ArrayList<>()).add(chunkInfo);
             }
         }
 
-        this.chunkScanner = new ChunkScanner().runTaskTimerAsynchronously(instance, 0, 1);
         this.floraPopulate = new FloraPopulate().runTaskTimer(instance, 0, 1);
+        //this.broadcast = new Broadcast().runTaskTimerAsynchronously(instance,0, 100);
         logger.info("Enabled successful");
+    }
+
+    public static int getScannerId() {
+        int id = scannersUnused.remove();
+        scannersUsed.add(id);
+
+        if (scannersUnused.size() == 0) {
+            scannersUnused.addAll(scannersUsed);
+            scannersUsed.clear();
+        }
+
+        return id;
     }
 
     @Override
     public void onDisable() {
         if (!errorOnLoad) {
-            if (!this.chunkScanner.isCancelled()) this.chunkScanner.cancel();
+            for (BukkitTask task : chunkScanners) {
+                if (!task.isCancelled()) task.cancel();
+            }
+            if (!this.broadcast.isCancelled()) this.broadcast.cancel();
             if (!this.floraPopulate.isCancelled()) this.floraPopulate.cancel();
         }
 

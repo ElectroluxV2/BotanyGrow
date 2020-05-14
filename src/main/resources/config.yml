@@ -1,2 +1,7 @@
 # Main configuration file
-#TODO
+# In how many parts should be chunk spliced during scan?
+# Only multiples of 2 and less than 256
+chunk-parts: 1
+
+# How many chunk scanners should be?
+chunk-scanners: 2

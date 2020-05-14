@@ -7,23 +7,28 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.ChunkLoadEvent;
 
+import java.util.ArrayList;
+
+import static io.github.electroluxv2.BotanyGrow.MainPlugin.*;
+
 public class ChunkLoadE implements Listener {
 
     @EventHandler
     public void onChunkLoadEvent(ChunkLoadEvent e) {
         ChunkSnapshot chunkSnapshot = e.getChunk().getChunkSnapshot();
-        ChunkInfo c2 = new ChunkInfo(chunkSnapshot);
+        ChunkInfo chunkInfo = new ChunkInfo(chunkSnapshot);
 
-        if (MainPlugin.chunksScanned.contains(c2) && MainPlugin.chunksToScan.contains(c2)) {
+        int taskId = MainPlugin.getScannerId();
+
+        if (MainPlugin.chunksScanned.get(taskId).contains(chunkInfo) && chunksToScan.get(taskId).contains(chunkInfo)) {
             return;
         }
 
-        if (c2.world.contains("nether")) return;
-        if (c2.world.contains("the_end")) return;
+        if (chunkInfo.world.contains("nether")) return;
+        if (chunkInfo.world.contains("the_end")) return;
 
-        ChunkInfo chunkInfo = new ChunkInfo(e.getChunk().getChunkSnapshot());
-        MainPlugin.chunksToScan.add(chunkInfo);
+        chunksToScan.computeIfAbsent(taskId, id -> new ArrayList<>()).add(chunkInfo);
 
-        //MainPlugin.logger.info("New X: " + chunkInfo.x + " Z: " + chunkInfo.z);
+        //MainPlugin.logger.info("Added chunk to " + taskId);
     }
 }

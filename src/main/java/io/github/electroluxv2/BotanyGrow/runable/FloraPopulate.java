@@ -227,7 +227,6 @@ public class FloraPopulate extends BukkitRunnable {
             //MainPlugin.logger.info("TierUp success: " + o.getType() + " => " + tier.material);
             o.setType(tier.material, false);
         }
-
         return true;
     }
 

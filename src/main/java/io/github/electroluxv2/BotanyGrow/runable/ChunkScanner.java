@@ -6,7 +6,6 @@ import io.github.electroluxv2.BotanyGrow.utils.ChunkInfo;
 import org.bukkit.*;
 import org.bukkit.block.data.Bisected;
 import org.bukkit.scheduler.BukkitRunnable;
-import sun.applet.Main;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -18,7 +17,7 @@ public class ChunkScanner extends BukkitRunnable {
 
     private ChunkInfo currentChunkInfo = null;
     private int heightIndex = 0;
-    public int splitParts = 1;
+    public int splitParts = Settings.chunkParts;
 
     private static int randomIndex(int size) {
         Random r = new Random();
@@ -26,18 +25,20 @@ public class ChunkScanner extends BukkitRunnable {
     }
 
     public void run() {
+        MainPlugin.asyncMetrics.merge(this.getTaskId(),1, Integer::sum);
+        //MainPlugin.logger.info(this.getTaskId() + " init");
         //MainPlugin.logger.info("chunksToScan: " + chunksToScan.size() + " chunksScanned: " + chunksScanned.size());
         if (currentChunkInfo == null) {
-            if (chunksToScan.size() == 0) {
-                if (chunksScanned.size() == 0) return;
+            if (chunksToScan.get(this.getTaskId()).size() == 0) {
+                if (chunksScanned.get(this.getTaskId()).size() == 0) return;
 
-                chunksToScan.addAll(chunksScanned);
-                chunksScanned.clear();
+                chunksToScan.get(this.getTaskId()).addAll(chunksScanned.get(this.getTaskId()));
+                chunksScanned.get(this.getTaskId()).clear();
             }
-            int randomIndex = randomIndex(chunksToScan.size());
-            currentChunkInfo = chunksToScan.get(randomIndex);
+            int randomIndex = randomIndex(chunksToScan.get(this.getTaskId()).size());
+            currentChunkInfo = chunksToScan.get(this.getTaskId()).get(randomIndex);
             if (currentChunkInfo == null) {
-                chunksToScan.remove(randomIndex);
+                chunksToScan.get(this.getTaskId()).remove(randomIndex);
                 return;
             }
         }
@@ -45,7 +46,7 @@ public class ChunkScanner extends BukkitRunnable {
         // Get world
         World w = Bukkit.getWorld(currentChunkInfo.world);
         if (w == null) {
-            chunksToScan.remove(currentChunkInfo);
+            chunksToScan.get(this.getTaskId()).remove(currentChunkInfo);
             return;
         }
 
@@ -100,8 +101,8 @@ public class ChunkScanner extends BukkitRunnable {
         if (heightIndex == splitParts) {
             heightIndex = 0;
 
-            chunksToScan.remove(currentChunkInfo);
-            chunksScanned.add(currentChunkInfo);
+            chunksToScan.get(this.getTaskId()).remove(currentChunkInfo);
+            chunksScanned.get(this.getTaskId()).add(currentChunkInfo);
             currentChunkInfo = null;
         }
     }

@@ -7,13 +7,18 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
+import org.bukkit.scheduler.BukkitTask;
 
 public class ChunkUnloadE implements Listener {
 
     @EventHandler
     public void onChunkUnloadEvent(ChunkUnloadEvent e) {
         ChunkInfo chunkInfo = new ChunkInfo(e.getChunk().getChunkSnapshot());
-        MainPlugin.chunksToScan.remove(chunkInfo);
-        MainPlugin.chunksScanned.remove(chunkInfo);
+
+        for (BukkitTask task : MainPlugin.chunkScanners) {
+            int id = task.getTaskId();
+            MainPlugin.chunksToScan.get(id).remove(chunkInfo);
+            MainPlugin.chunksScanned.get(id).remove(chunkInfo);
+        }
     }
 }
